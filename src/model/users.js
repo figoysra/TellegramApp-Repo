@@ -1,6 +1,4 @@
 const connection = require('../config/db')
-const jwt = require('jsonwebtoken')
-const { JWT_SECRET } = require("../helpers/env")
 
 const usersModel = {
     getAllData: () => new Promise((resolve,reject)=>{
@@ -13,7 +11,7 @@ const usersModel = {
         })
     }),
     getList: (search, field, typeSort, limit, offset) => new Promise((resolve, reject)=>{
-        connection.query(`select * from users where displayName LIKE '%${search}' 
+        connection.query(`select * from users where username LIKE '%${search}%' 
         ORDER BY ${field} ${typeSort} LIMIT ${limit} OFFSET ${offset}`, (err, result)=>{
             if(err){
                 reject(err)
@@ -24,30 +22,25 @@ const usersModel = {
         });
     }),
     login: (body) => new Promise((resolve, reject) =>{
-        const {email} = body
-        connection.query(`select * from users where email = '${email}'`, (err, result)=>{
-            if(err){
+        const { email, username } = body;
+            connection.query(`select * from users where email = '${email}' or username ='${username}'`, (err, result)=>{
+                if(err){
                 reject(err)
             }else{
                 if(result.length <= 0){
                     resolve(result)
                 }else{
                     const user = result[0]
-                    const payload = {
-                        id : user.id,
-                        email: user.email
-                    }
-                    const token= jwt.sign(payload, JWT_SECRET)
-                    resolve({result, token})
+                    resolve(user)
                 }
             }
         })
     }),
     register: (body) => new Promise ((resolve, reject)=>{
-        const {email, password, displayName, image, username, bio, numberPhone} = body
+        const {email, password, displayName, image, username, bio, numberPhone, isOnline} = body
         connection.query(
-            `INSERT INTO users (email, password, displayName, profilePicture, username, bio, numberPhone)
-            value ('${email}', '${password}','${displayName}', '${image}', '${username}', '${bio}', '${numberPhone}')`,
+            `INSERT INTO users (email, password, displayName, profilePicture, username, bio, numberPhone, isOnline)
+            value ('${email}', '${password}','${displayName}', '${image}', '${username}', '${bio}', '${numberPhone}', ${isOnline})`,
             (err, result)=>{
                 if (err) {
                     reject(err);
@@ -71,9 +64,12 @@ const usersModel = {
     }),
     update: (id, data) => new Promise ((resolve, reject)=>{
         const {
-            email, password, displayName, image, username, bio, numberPhone
+            email, displayName, image, username, bio, numberPhone
         } = data
-        connection.query(`UPDATE users SET email ='${email}', password='${password}', displayName='${displayName}', profilePicture='${image}', username='${username}', bio='${bio}', numberPhone='${numberPhone}' WHERE id=${id}`, (err,result)=>{
+        connection.query(`
+        UPDATE users SET email ='${email}', displayName='${displayName}', 
+        profilePicture='${image}', username='${username}', bio='${bio}', numberPhone='${numberPhone}'
+        WHERE id=${id}`, (err,result)=>{
             if(err){
                 // console.log(err)
                 reject(err)
@@ -91,6 +87,22 @@ const usersModel = {
             resolve(result);
         }
         });
+    }),
+    updateStatus: (id, data) => new Promise ((resolve, reject)=>{
+        const { isOnline, timeOnline} = data
+        // console.log(data)
+        // console.log(id)
+        connection.query(`
+            UPDATE users SET isOnline='${isOnline}',timeOnline='${timeOnline}' WHERE id = ${id}`, 
+            (err,result)=>{    
+            if(err){
+                
+                reject(err)
+            }else{
+                
+                resolve(result)
+            }
+        })
     }),
 }
 
