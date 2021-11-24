@@ -6,7 +6,7 @@ const contactsRouter = require("./src/router/contacts")
 const http = require("http");
 const { Server } = require("socket.io");
 const socketModel = require("./src/model/socket");
-const contactModel = require("./src/model/contacts")
+const {PORT}= require("./src/helpers/env")
 
 const app = express()
 app.use(cors())
@@ -32,29 +32,23 @@ io.on("connection", (socket)=>{
     socket.on("broadcast", (id)=>{
         socket.broadcast.emit("get-online-broadcast", id);
     })
-    socket.on("send-message", (payload)=>{
+    socket.on("send-message", (data)=>{
         // const { sender, receiver, message} = payload
+        // console.log(data.receiver)
         socketModel
-            .insertMessage(payload)
+            .insertMessage(data)
             .then((response)=>{
-                io.to(payload.reciever).emit("list-message", payload)
+                // console.log(response.insertId)
+                const payload = { ...data, id: response.insertId }
+                // console.log(payload)
+                io.to(data.receiver).emit("list-message", payload)
             })
     })
     socket.on("get-message", ({sender, receiver})=>{
         socketModel
             .getMessage({sender, receiver})
             .then((response)=>{
-                console.log(response)
                 io.to(sender).emit("history-messages", response)
-            })
-    })
-    socket.on("get-contacts", (user)=>{
-        // console.log(user.id)
-        contactModel
-            .getContact(user)
-            .then((response)=>{
-                io.to(user.id).emit("list-contacts", response);
-                // console.log(response)
             })
     })
 
@@ -68,7 +62,6 @@ io.on("connection", (socket)=>{
 })
 
 
-const PORT = 2000;
 httpServer.listen(PORT, () => {
     console.log(`Service running on Port ${PORT}`);
 });

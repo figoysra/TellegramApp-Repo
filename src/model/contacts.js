@@ -12,9 +12,9 @@ const contacts = {
             }
         })
     }),
-    getContact: (payload) => new Promise ((resolve, reject)=>{
-        const { id, search }= payload
-        console.log(search)
+    getContact: (search, id) => new Promise ((resolve, reject)=>{
+        // const { id, search }= payload
+        // console.log(search)
         connection.query(`
             select contacts.id, contacts.contactOne, contacts.contactTwo, cTwo.displayName, cTwo.profilePicture, cTwo.isOnline
             from contacts left join users as cTwo on contacts.contactTwo = cTwo.id 

@@ -1,11 +1,11 @@
 const mysql = require('mysql2')
-const {DB_USERNAME, DB_PASSWORD} = require("../helpers/env")
+const {DB_USERNAME, DB_PASSWORD, DB_HOST, DB_NAME} = require("../helpers/env")
 
 const connection = mysql.createConnection({
-    host    : "localhost",
+    host    : DB_HOST,
     user    : DB_USERNAME,
     password: DB_PASSWORD,
-    database: "telegramapp" 
+    database: DB_NAME 
 })
 
 connection.connect((err)=>{
