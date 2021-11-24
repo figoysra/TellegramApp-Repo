@@ -58,32 +58,30 @@ const users = {
             const { body } = req;
             usersModel
                 .login(body)
-                .then((data) => {
-                    // console.log(data.password)
-                    if(data.length <= 0){
-                        failed(res.status(404), 404, "Email Salah");
-                    }else{
-                        const hash = data.password;
+                .then((data)=>{
+                    if (data.length <= 0) {
+                        failed(res.status(404), 404, 'Wrong Emails');
+                    } else {
+                        const hash = data[0].password;
+                        // console.log(data)
                         bcrypt.compare(body.password, hash, (error, checkpass) => {
-                            if (error) {
-                                failed(res.status(404), 404, error);
-                            } else if (checkpass === true) {
-                                const payload = {
-                                    id: data.id,
-                                };
-                                const token = jwt.sign(payload, JWT_SECRET)
-                                successLogin(res, data, token );
-                            } else {
-                                failed(res.status(404), 404, "Wrong Password");
-                            }
+                        if (error) {
+                            failed(res.status(401), 401, error);
+                        } else if (checkpass === true) {
+                            successLogin(res, data[0], data.token);
+                        } else {
+                            failed(res.status(404), 404, 'Wrong Password');
+                        }
                         });
                     }
-                });
-            }
-            catch(err){
-                failed(res.status(401), 401, err);
-            }
-        },
+                }).catch((error)=>{
+                    failed(res.status(404), 404, err);
+                })
+        }
+        catch(err){
+            failed(res.status(401), 401, err);
+        }
+    },
     register: (req, res) =>{
         try {
             const { body } = req;

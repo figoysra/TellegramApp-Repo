@@ -24,15 +24,10 @@ const usersModel = {
     login: (body) => new Promise((resolve, reject) =>{
         const { email, username } = body;
             connection.query(`select * from users where email = '${email}' or username ='${username}'`, (err, result)=>{
-                if(err){
+            if(err){
                 reject(err)
             }else{
-                if(result.length <= 0){
-                    resolve(result)
-                }else{
-                    const user = result[0]
-                    resolve(user)
-                }
+                resolve(result);
             }
         })
     }),
