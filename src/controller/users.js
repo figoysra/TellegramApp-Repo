@@ -68,14 +68,19 @@ const users = {
                         if (error) {
                             failed(res.status(401), 401, error);
                         } else if (checkpass === true) {
-                            successLogin(res, data[0], data.token);
+                            const payload = {
+                                id: data[0].id,
+                                email: data[0].email,
+                            };
+                            const token = jwt.sign(payload, JWT_SECRET);
+                            successLogin(res, data[0], token);
                         } else {
                             failed(res.status(404), 404, 'Wrong Password');
                         }
                         });
                     }
                 }).catch((error)=>{
-                    failed(res.status(404), 404, err);
+                    failed(res.status(404), 404, error);
                 })
         }
         catch(err){
