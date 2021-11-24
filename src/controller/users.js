@@ -60,24 +60,28 @@ const users = {
                 .login(body)
                 .then((data) => {
                     // console.log(data.password)
-                    const hash = data.password;
-                    bcrypt.compare(body.password, hash, (error, checkpass) => {
-                        if (error) {
-                            failed(res.status(404), 404, "Email Salah");
-                        } else if (checkpass === true) {
-                            const payload = {
-                                id: data.id,
-                            };
-                            const token = jwt.sign(payload, JWT_SECRET)
-                            successLogin(res, data, token );
-                        } else {
-                            failed(res.status(404), 404, "Wrong Password");
-                        }
-                    });
+                    if(data.length <= 0){
+                        failed(res.status(404), 404, "Email Salah");
+                    }else{
+                        const hash = data.password;
+                        bcrypt.compare(body.password, hash, (error, checkpass) => {
+                            if (error) {
+                                failed(res.status(404), 404, error);
+                            } else if (checkpass === true) {
+                                const payload = {
+                                    id: data.id,
+                                };
+                                const token = jwt.sign(payload, JWT_SECRET)
+                                successLogin(res, data, token );
+                            } else {
+                                failed(res.status(404), 404, "Wrong Password");
+                            }
+                        });
+                    }
                 });
-        
-            }catch(err){
-                failed(res.status(401), 401, error);
+            }
+            catch(err){
+                failed(res.status(401), 401, err);
             }
         },
     register: (req, res) =>{
